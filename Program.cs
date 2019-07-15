@@ -14,10 +14,9 @@ namespace RestSharper
     {
         static void Main(string[] args)
         {
-            // start point
-            var client = new RestClient("https://jsonplaceholder.typicode.com/");
+            RestClient client = new RestClient("https://jsonplaceholder.typicode.com/");
 
-            // navigate to https://jsonplaceholder.typicode.com/users
+            // navigate to /users
             var request = new RestRequest("/users", Method.GET);
 
             // execute the request
@@ -26,14 +25,13 @@ namespace RestSharper
 
             // Console.Write(content);
 
-            // convert the string to an array of objects
-            var dataAsJsonObject = JsonConvert.DeserializeObject(content);
-            // could also convert this using fromObject
+            // convert the string to an array of objects, could also convert this using fromObject
+            object dataAsJsonObject = JsonConvert.DeserializeObject(content);
 
             // Console.Write(dataAsJsonObject);
 
-            // parse the content into a jArray
-            JArray dataAsSeparateObjects = JArray.Parse(content);
+            // parse the content into a jArray, an array of json
+            JArray dataAsJArray = JArray.Parse(content);
 
             var dbConnString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Parsing;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
@@ -42,11 +40,10 @@ namespace RestSharper
                 connection.Open();
 
                 // convert the JArray of objects into separate JSON objects
-                foreach (var user in dataAsSeparateObjects)
+                foreach (JToken user in dataAsJArray)
                 {
                     // Console.Write(item);
                     // SQL Client Documentation on writing SQL commands in C#
-                    // Values uses placeholders in the initial SqlCommand in said format "@example"
                     SqlCommand insertStatement = new SqlCommand("INSERT into [User] (Id, name, username, email) VALUES (@id, @name, @username, @email)", connection);
                     insertStatement.Parameters.AddWithValue("@id", user["id"].ToObject<int>());
                     insertStatement.Parameters.AddWithValue("@name", user["name"].ToString());
